@@ -342,8 +342,8 @@ if index_clicked:
         except Exception as exc:
             st.error(f"PDF processing failed: {exc}")
 
-tab_roadmap, tab_coach, tab_progress, tab_prompts = st.tabs([
-    "🗺️ Roadmap", "💬 Roadmap Coach", "✅ Progress Tracker", "🧠 Prompt Design"
+tab_roadmap, tab_coach, tab_progress= st.tabs([
+    "🗺️ Roadmap", "💬 Roadmap Coach", "✅ Progress Tracker"
 ])
 
 # TAB 1: ROADMAP
@@ -500,55 +500,6 @@ with tab_progress:
 
         st.caption("Progress is stored in the active Streamlit session. It is not permanently saved to a database.")
 
-# TAB 4: PROMPT ENGINEERING
-with tab_prompts:
-    st.subheader("Prompt Engineering Demonstration")
-    st.markdown("""
-### 1. Role-Based Prompting
-The system prompt defines the model as an expert learning roadmap coach.
-
-### 2. Few-Shot Prompting
-A short example demonstrates the expected weekly structure.
-
-### 3. Stepwise Planning
-The prompt asks the model to identify skill gaps, sequence prerequisites, allocate time, and define milestones.
-
-### 4. Structured Output
-The model returns Markdown sections for the learner profile, skill gaps, weekly plan, capstone, and checkpoints.
-
-### 5. Conversation Memory
-The Roadmap Coach receives the current roadmap and recent conversation history.
-
-### 6. Retrieval Augmented Generation (RAG)
-An uploaded PDF is split into chunks, embedded, indexed with FAISS, and searched for relevant excerpts.
-""")
-    st.markdown("### Processing Flow")
-    st.code("""
-Learner profile
-      |
-      v
-System prompt + user prompt + few-shot example
-      |
-      +----------------------------+
-      |                            |
-      v                            v
-Gemini roadmap generation    Optional PDF RAG
-                                  |
-                          Text chunks and embeddings
-                                  |
-                            FAISS retrieval
-                                  |
-      +---------------------------+
-      |
-      v
-Google Gemini API
-      |
-      v
-Streaming response in Streamlit
-      |
-      v
-Roadmap, coach, and progress tracking
-""", language="text")
 
 st.divider()
 st.caption("AI Learning Roadmap Generator | Python + Streamlit + Google Gemini + Sentence Transformers + FAISS")
