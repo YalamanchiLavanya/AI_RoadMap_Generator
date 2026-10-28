@@ -1,9 +1,11 @@
 streamlit
-google-genai
 python-dotenv
+google-genai
 pypdf
 sentence-transformers
 faiss-cpu
 numpy
+pytest
+
 
 
