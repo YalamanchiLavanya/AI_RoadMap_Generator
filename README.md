@@ -1,146 +1,61 @@
 # AI Learning Roadmap Generator
 
-An AI-powered application that creates personalized, week-by-week learning roadmaps based on a learner's career goal, current skills, experience level, available study hours, and preferred learning style.
+A Streamlit app that turns a learner's goal, skills, level, weekly hours and duration into a
+**validated** week-by-week roadmap, with a coach chat, optional PDF knowledge (RAG), verified
+resource links, and progress tracking that feeds back into the coach.
 
-The application uses Google's Gemini API to generate learning plans and supports PDF-based retrieval, interactive roadmap coaching, progress tracking, and downloadable roadmaps.
+## What changed after the project feedback
 
-## Features
+| # | Feedback | What the app does now | Where |
+|---|---|---|---|
+| 1 | Retry during streaming repeated text | Automatic retry only **before** any text is emitted. If a stream breaks after text appeared, `StreamInterruptedError` carries the partial text; roadmap/revision calls discard it and restart cleanly, chat shows it as unsaved and offers **Retry**. | `roadmap_engine.generate_response`, `collect_text` |
+| 2 | Chat revisions did not update the roadmap | **Revise the roadmap** drafts a full revised plan; nothing changes until **Apply revised roadmap**. Display, download, tracker and export all read one stored plan. | `roadmap_engine.revise_roadmap`, `progress.apply_pending_revision`, Coach tab |
+| 3 | Limits depended on prompting | The model returns structured JSON. The app checks week count, per-week hours, required sections, milestones and feasibility before showing it. Small hour overruns are scaled down (and reported); bigger problems get one repair request; a plan that still fails is not shown. Unrealistic goals produce a visible "reality check" with what *is* achievable. | `roadmap_engine.validate_plan`, `assess_time_budget` |
+| 4 | PDF handled inconsistently | The indexed PDF is used in roadmap generation, coach chat **and** revisions. Chunks keep page numbers; answers cite pages. Removing or replacing the file clears the old index (tracked by file hash). | `rag_system.py` |
+| 5 | Progress not connected | Tasks are built from weekly activities + milestones; completion is sent to the coach; completed tasks survive a revision; progress can be exported/restored as JSON. | `progress.py` |
+| 6 | Testing evidence | 100 automated tests (fake Gemini client, real PDFs, local HTTP server) plus a documented live-test matrix. Links are verified before being called curated. | `tests/`, `docs/`, `link_checker.py` |
 
-- **Personalized Roadmaps:** Generate structured weekly learning plans for different career goals.
-- **AI Roadmap Coach:** Ask questions, clarify concepts, and request roadmap revisions.
-- **PDF-Based RAG:** Upload reference PDFs and retrieve relevant information using embeddings and FAISS.
-- **Progress Tracker:** Mark weekly milestones as completed and record notes.
-- **Progress Import and Export:** Save and restore progress using JSON files.
-- **Streaming Responses:** Display AI-generated responses as they arrive.
-- **Prompt Engineering:** Use system instructions, few-shot examples, and contextual information.
-- **Input Validation:** Validate learning goals, experience levels, study hours, and roadmap duration.
-- **Automated Tests:** Use pytest to check core functionality and error handling.
+## Project structure
 
-## Technologies Used
-
-- Python
-- Streamlit
-- Google Gemini API (`google-genai`)
-- Sentence Transformers
-- FAISS
-- PyPDF
-- NumPy
-- pytest
-
-## Project Structure
-
-```text
-AI_RoadMap_Generator/
-├── app.py
-├── config.py
-├── prompts.py
-├── roadmap_engine.py
-├── rag_system.py
-├── progress.py
-├── requirements.txt
-├── .env
-├── .env.example
-├── .gitignore
-├── README.md
-└── tests/
-    └── test_roadmap.py
+```
+app.py              Streamlit interface only
+config.py           settings, limits, LearnerProfile, client creation
+prompts.py          roadmap, revision and coach prompts
+roadmap_engine.py   generation, streaming/retry, parsing, validation, revision, Markdown
+rag_system.py       PDF extraction, page-aware chunking, FAISS/NumPy retrieval, replace/remove rules
+progress.py         tasks, completion, export/import, plan state transitions
+link_checker.py     verifies recommended URLs (refuses private/local addresses)
+tests/              unit tests (unittest-compatible; pytest also works)
+docs/               TEST_EVIDENCE.md, DEMO_SCRIPT.md
 ```
 
-## Prerequisites
+## Setup
 
-- Python 3.10 or later
-- Internet connection
-- A Gemini API key
-- Basic familiarity with Python and the command line
-
-## Installation
-
-### 1. Open the project folder
-
-```powershell
-cd "C:\Users\User\OneDrive\Desktop\AI_RoadMap_Generator"
-```
-
-### 2. Install dependencies
-
-```powershell
+```bash
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 python -m pip install -r requirements.txt
-```
-
-### 3. Configure the API key
-
-Create a `.env` file in the project root directory.
-
-Add the following settings:
-
-```env
-GEMINI_API_KEY=your_actual_gemini_api_key
-GEMINI_MODEL=gemini-2.5-flash
-```
-
-Replace the example API key with your own key. Keep `.env` private and never upload it to GitHub.
-
-## Run the Application
-
-Start the Streamlit application:
-
-```powershell
+cp .env.example .env                                   # then put your own key in .env
 python -m streamlit run app.py
 ```
 
-Streamlit will display a local URL in the terminal. Open that URL in your browser.
+On Streamlit Community Cloud, add `GEMINI_API_KEY` (and optionally `GEMINI_MODEL`) under
+**App settings > Secrets** instead of using `.env`.
 
-## How to Use
+## Running the tests
 
-1. Enter your career or learning goal.
-2. Describe your current skills and select your experience level.
-3. Choose your weekly study hours and roadmap duration.
-4. Select your preferred learning style and language.
-5. Generate your personalized roadmap.
-6. Optionally upload a PDF to provide additional reference material.
-7. Use the Roadmap Coach to ask questions or request changes.
-8. Apply a proposed roadmap revision after reviewing it.
-9. Track weekly milestones in the Progress Tracker.
-10. Export your roadmap or save your progress as JSON.
-
-## Run Automated Tests
-
-Run the test suite with:
-
-```powershell
-python -m pytest tests/test_roadmap.py -v
+```bash
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tests -t . -v      # or: pytest
 ```
 
-The tests cover roadmap validation, input validation, progress tracking, API streaming failure handling, PDF-index clearing, and revision-related behavior.
+The tests need no API key and no internet. They do **not** call real Gemini, so they prove the
+app's logic, not the quality of live model output - see `docs/TEST_EVIDENCE.md` for what is and
+is not covered, and for the live-test matrix to fill in.
 
-## Project Architecture
+## Notes and limits
 
-- **`app.py`:** Streamlit user interface and session management.
-- **`config.py`:** Gemini client configuration and environment settings.
-- **`prompts.py`:** System instructions, few-shot examples, and roadmap prompts.
-- **`roadmap_engine.py`:** AI response generation and roadmap validation.
-- **`rag_system.py`:** PDF text extraction, embeddings, and FAISS similarity search.
-- **`progress.py`:** Milestone tracking and JSON import/export.
-- **`tests/test_roadmap.py`:** Automated tests for core functions.
-
-## Limitations
-
-- Roadmap quality depends on the AI model's output and the learner's inputs.
-- Generated resource links should be checked before use.
-- Scanned PDFs may require OCR to extract their text.
-- Progress is stored in the active Streamlit session unless additional persistent storage is implemented.
-- Structural validation does not guarantee that every weekly activity fits the available study hours.
-- PDF retrieval provides relevant text excerpts but does not guarantee that every answer is fully supported by the uploaded document.
-
-## Future Improvements
-
-- Add persistent user accounts and database-backed progress.
-- Improve validation of weekly time allocations and milestone quality.
-- Add more comprehensive integration tests.
-- Support OCR for scanned PDFs.
-- Add charts showing learning progress and completed milestones.
-- Improve roadmap revision detection and comparison.
-
-## Author
-Yalamanchi Lavanya
-Developed as a Python and Generative AI project to help learners plan their career development through personalized learning roadmaps.
+* Progress lives in the browser session. Use **Export progress** to continue later.
+* Link checks show what answered when checked; sites that block bots appear as "could not verify".
+* The "total hours look too small" rule is a rough rule of thumb used to alert the model and the
+  learner, not a guarantee. Check `assess_time_budget` in `roadmap_engine.py` to tune it.
+* Never commit `.env`. If a key was ever shared or committed, rotate it.

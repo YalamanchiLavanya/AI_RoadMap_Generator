@@ -23,36 +23,43 @@ from rag_system import create_knowledge_base
 
 
 # Sample roadmap used by tests
+
 SAMPLE_ROADMAP = """
-# Goal Overview
-Become a Python Developer.
+## 1. Goal Overview
+Learn Python in two weeks.
 
-# Current Skill Assessment
-Beginner with basic computer knowledge.
+## 2. Current Skill Assessment
+Beginner level.
 
-# Skill Gaps
-Python fundamentals and practical programming.
+## 3. Skill Gaps
+Need to learn Python basics.
 
-# Week-by-Week Learning Plan
-## Week 1: Python Basics
-Study variables and data types for 5 hours.
+## 4. Week-by-Week Learning Plan
+### Week 1: Python Basics
+- Study time: 5 hours.
+- Milestone: Complete Python exercises.
 
-## Week 2: Python Practice
-Practice conditions and loops for 5 hours.
+### Week 2: Python Practice
+- Study time: 5 hours.
+- Milestone: Build a small project.
 
-# Learning Resources
-- Python documentation.
+## 5. Practical Exercises
+Practice variables, loops, and functions.
 
-# Portfolio Project
+## 6. Learning Resources
+- Python documentation: https://docs.python.org/3/
+
+## 7. Portfolio Project
 Create a simple calculator.
 
-# Weekly Milestones and Checkpoints
-- Week 1: Write a simple program.
+## 8. Weekly Milestones and Checkpoints
+- Week 1: Complete exercises.
 - Week 2: Complete the calculator.
 
-# Next Steps
-Continue practising Python.
+## 9. Next Steps
+Continue learning Python.
 """
+
 
 
 # ---------------------------------------------------------

@@ -1,11 +1,7 @@
-streamlit
-python-dotenv
+streamlit>=1.35
 google-genai
+python-dotenv
 pypdf
 sentence-transformers
 faiss-cpu
 numpy
-pytest
-
-
-
