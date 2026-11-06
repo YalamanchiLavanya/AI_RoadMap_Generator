@@ -5,3 +5,5 @@ pypdf
 sentence-transformers
 faiss-cpu
 numpy
+pytest
+reportlab
