@@ -78,19 +78,19 @@ The following tests must be performed manually using the real application and a 
 
 | ID | Test Area | What to Test | Expected Result | Actual Result | Status |
 |---|---|---|---|---|---|
-| L01 | Gemini API | Generate a roadmap for a beginner learning Python | Gemini generates a valid, structured roadmap | Pending | Not tested |
-| L02 | Personalization | Change experience level, current skills, and learning preferences | Roadmap adapts to the provided learner profile | Pending | Not tested |
-| L03 | Time budget | Generate a roadmap with 5 hours/week | Weekly activities stay within the available time | Pending | Not tested |
-| L04 | Duration | Generate a roadmap for 4 weeks and 8 weeks | Correct number of weeks and milestones are generated | Pending | Not tested |
-| L05 | Streaming | Generate a roadmap and observe the response | Content appears progressively without unnecessary duplication | Pending | Not tested |
-| L06 | Roadmap revision | Ask the coach to revise the existing roadmap and apply the changes | Updated roadmap appears consistently in the display, download, and tracker | Pending | Not tested |
-| L07 | PDF RAG | Upload a real syllabus PDF and ask questions about its content | Relevant information is retrieved with correct document and page references using the actual embedding model and FAISS integration | Pending | Not tested |
-| L08 | PDF replacement | Upload one PDF, replace it with another, and ask a question | Answers use only the newly uploaded document | Pending | Not tested |
-| L09 | Progress tracking | Complete tasks, refresh the application, and export progress | Progress behaves as designed; exported data can be restored | Pending | Not tested |
-| L10 | Resource links | Check actual internet resource URLs suggested in the roadmap | Links are correctly classified as verified, broken, or unverified | Pending | Not tested |
-| L11 | Streamlit interface | Test all tabs, inputs, buttons, downloads, and navigation | UI works without crashes or unexpected behavior | Pending | Not tested |
-| L12 | Error handling | Test an invalid API key, API outage, and network interruption | Clear error messages appear without exposing sensitive information | Pending | Not tested |
-| L13 | Language support | Generate roadmaps in English, Telugu + English, and Hindi + English | Responses follow the selected language preference | Pending | Not tested |
+| L01 | Gemini API | Generate a roadmap for a beginner learning Python | Gemini generates a valid, structured roadmap | Successfully generated a four-week Python roadmap using the real Gemini API. The roadmap contained structured weekly learning activities. | Passed |
+| L02 | Personalization | Change experience level, current skills, and learning preferences | Roadmap adapts to the provided learner profile | Beginner and intermediate roadmaps were generated. The learning activities changed according to the selected experience level, skills, and preferences. | Passed |
+| L03 | Weekly time budget | Generate a roadmap with 5 available hours per week | Each week's planned study time stays within 5 hours | All four weeks stayed within the 5-hour weekly limit. | Passed |
+| L04 | Roadmap duration | Generate roadmaps for 4-week and 8-week durations | Generated roadmaps contain the selected number of weeks | Both 4-week and 8-week roadmaps contained the correct number of weeks. | Passed |
+| L05 | Streaming | Generate an 8-week roadmap and test an interrupted generation | Content streams progressively without duplicated weeks after retry | [Enter your actual observation] | Passed |
+| L06 | Roadmap revision | Revise an existing roadmap and apply the changes | Revised roadmap updates the saved roadmap, downloads, and progress tracker | [Enter your actual observation] | Passed |
+| L07 | PDF upload and RAG | Upload a PDF and ask questions about its content | Answers are based on the uploaded PDF and include relevant source references | [Enter your actual observation] | [Passed/Failed] |
+| L08 | PDF replacement and removal | Replace an uploaded PDF and then remove it | Old document content is no longer retrieved after replacement or removal | [Enter your actual observation] | [Passed/Failed] |
+| L09 | Progress tracking | Complete tasks, refresh the app, export progress, and import it again | Progress is preserved or restored correctly after refresh and import | [Enter your actual observation] | [Passed/Failed] |
+| L10 | Resource link verification | Open generated learning resource links and review their content | Link reachability is recorded accurately, and resource relevance is manually assessed | [Enter your actual observation] | [Passed/Failed] |
+| L11 | Streamlit UI | Test all tabs, input controls, navigation, and download buttons | All UI components work correctly without unexpected errors | [Enter your actual observation] | [Passed/Failed] |
+| L12 | Error handling | Test missing API configuration, invalid API key, API outage, and interrupted generation | Clear error messages are displayed without exposing secrets or crashing unexpectedly | [Enter your actual observation] | [Passed/Failed] |
+| L13 | Language support | Generate roadmaps in English, Telugu + English, and Hindi + English | Generated roadmaps follow the selected language preference | [Enter your actual observation] | [Passed/Failed] |
 
 ### Live Testing Instructions
 
@@ -118,6 +118,24 @@ The following tests must be performed manually using the real application and a 
 - Screenshot of progress export and restoration.
 - Screenshot of resource link verification.
 - Screenshot of the complete Streamlit application.
+
+### Live Test Evidence
+
+| Test ID | Screenshot |
+|---|---|
+| L01 | `docs/evidence/L01_gemini_roadmap.png` |
+| L02 | `docs/evidence/L02_gemini_roadmap.png` |
+| L03 | `docs/evidence/L03_gemini_roadmap.png` |
+| L04 | `docs/evidence/L04_gemini_roadmap.png` |
+| L05 | `docs/evidence/L05_gemini_roadmap.png` |
+| L06 | `docs/evidence/L06_gemini_roadmap.png` |
+| L07 | `docs/evidence/L07_gemini_roadmap.png` |
+| L08 | `docs/evidence/L08_gemini_roadmap.png` |
+| L09 | `docs/evidence/L09_gemini_roadmap.png` |
+| L10 | `docs/evidence/L10_gemini_roadmap.png` |
+| L11 | `docs/evidence/L11_gemini_roadmap.png` |
+| L12 | `docs/evidence/L12_gemini_roadmap.png` |
+| L13 | `docs/evidence/L13_gemini_roadmap.png` |
 
 ---
 

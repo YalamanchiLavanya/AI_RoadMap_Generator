@@ -555,153 +555,312 @@ with tab_roadmap:
         st.info("Fill in your profile in the sidebar and click **Generate My Roadmap**. "
                 "You can also restore saved progress in the Progress Tracker tab.")
 
+
 # ==========================================================================
 # Tab 2 - Roadmap Coach
 # ==========================================================================
 with tab_coach:
     st.subheader("Chat with Your Roadmap Coach")
-    st.write("Ask questions about your plan. To change the plan itself, use **Revise the roadmap** below.")
+
+    st.write(
+        "Ask questions about your learning plan. "
+        "You can also revise and update your existing roadmap."
+    )
 
     if not ss.roadmap_plan:
         st.info("Generate a roadmap first to start a conversation.")
+
     else:
+        # --------------------------------------------------------------
+        # 1. Display pending revision
+        # --------------------------------------------------------------
         pending = ss.pending_revision
+
         if pending:
             with st.container(border=True):
-                st.markdown("### 📝 Drafted revision - not applied yet")
+                st.markdown("### 📝 Drafted Revision")
+                st.warning(
+                    "This is a draft. Your current roadmap has not changed yet."
+                )
+
                 st.caption(f"Request: {pending['instruction']}")
-                st.markdown("**What changes**")
+
+                st.markdown("**Changes included:**")
+
                 for line in pending["change_summary"]:
                     st.write(f"- {line}")
+
                 if pending["changed_weeks"]:
-                    st.caption("Weeks that differ: " + ", ".join(str(w) for w in pending["changed_weeks"]))
+                    st.caption(
+                        "Weeks that differ: "
+                        + ", ".join(
+                            str(w) for w in pending["changed_weeks"]
+                        )
+                    )
+
                 for line in pending["notes"] + pending["warnings"]:
                     st.caption(f"ℹ️ {line}")
-                with st.expander("Preview the full revised roadmap"):
-                    st.markdown(plan_to_markdown(pending["plan"], ss.plan_profile, ss.link_results))
-                apply_col, discard_col = st.columns(2)
-                if apply_col.button("✅ Apply revised roadmap", type="primary", use_container_width=True):
-                    progress.apply_pending_revision(ss)
-                    refresh_links()
-                    st.rerun()
-                if discard_col.button("✖ Discard draft", use_container_width=True):
-                    progress.discard_pending_revision(ss)
-                    st.rerun()
 
-        with st.expander("📝 Revise the roadmap", expanded=False):
-            instruction = st.text_area(
-                "What should change?",
-                key="revision_instruction",
-                placeholder="Example: I can only study 5 hours a week from now on. "
-                            "Or: replace Week 2's SQL practice with a Power BI exercise.",
-            )
-            st.caption("Your completed tasks and the coach conversation are sent along. "
-                       "Nothing changes until you apply the draft.")
-            if st.button("Draft revised roadmap"):
-                if client is None:
-                    show_client_problem()
-                elif not instruction.strip():
-                    st.warning("Describe what should change first.")
-                else:
-                    revision_bar = st.progress(0.0, text="Drafting the revision...")
-                    status = st.empty()
-                    weeks_expected = ss.roadmap_plan["constraints"]["duration_weeks"]
-
-                    def on_revision_chunk(text):
-                        done = stream_progress(text, weeks_expected)
-                        revision_bar.progress(done, text=f"Drafting the revision... {round(done * 100)}%")
-
-                    try:
-                        hits = rag_system.retrieve(ss, instruction)
-                        revision = revise_roadmap(
-                            client, ss.roadmap_plan, ss.plan_profile, instruction,
-                            settings=settings, history=ss.messages,
-                            progress_text=progress.progress_summary_text(ss.tasks), hits=hits,
-                            on_chunk=on_revision_chunk,
-                            on_reset=lambda: revision_bar.progress(0.0, text="Starting this step again..."),
-                            on_status=status.info,
+                with st.expander("Preview full revised roadmap"):
+                    st.markdown(
+                        plan_to_markdown(
+                            pending["plan"],
+                            ss.plan_profile,
+                            ss.link_results
                         )
-                    except PlanValidationError as exc:
-                        st.error("The drafted revision broke your limits, so it was not kept. "
-                                 "Your current roadmap is unchanged.")
-                        with st.expander("What was wrong"):
-                            for line in exc.errors:
-                                st.write(f"- {line}")
-                    except (GenerationError, ValueError) as exc:
-                        st.error(str(exc))
-                    except Exception as exc:  # noqa: BLE001
-                        st.error(f"Revision failed: {exc}")
-                    else:
-                        progress.stage_revision(ss, revision, instruction.strip())
-                        st.rerun()
-                    finally:
-                        revision_bar.empty()
-                        status.empty()
+                    )
 
+                apply_col, discard_col = st.columns(2)
+
+                with apply_col:
+                    if st.button(
+                        "✅ Apply Revised Roadmap",
+                        type="primary",
+                        use_container_width=True
+                    ):
+                        progress.apply_pending_revision(ss)
+                        refresh_links()
+                        st.success("Revised roadmap applied successfully.")
+                        st.rerun()
+
+                with discard_col:
+                    if st.button(
+                        "❌ Discard Draft",
+                        use_container_width=True
+                    ):
+                        progress.discard_pending_revision(ss)
+                        st.rerun()
+
+        # --------------------------------------------------------------
+        # 2. Revision form - always visible
+        # --------------------------------------------------------------
         st.divider()
+        st.markdown("### 📝 Revise Your Roadmap")
+
+        st.info(
+            "Describe what you want to change. "
+            "Your existing roadmap will remain unchanged until "
+            "you apply the revised draft."
+        )
+
+        instruction = st.text_area(
+            "What should change?",
+            key="revision_instruction",
+            placeholder=(
+                "Example: Increase my study time to 8 hours per week. "
+                "Add more practical exercises and one mini project."
+            ),
+            height=120,
+        )
+
+        st.caption(
+            "Your completed tasks and coach conversation are included "
+            "when preparing the revision."
+        )
+
+        if st.button(
+            "📝 Draft Revised Roadmap",
+            type="primary",
+            use_container_width=True,
+            disabled=not instruction.strip() or client is None
+        ):
+            if client is None:
+                show_client_problem()
+
+            else:
+                revision_bar = st.progress(
+                    0.0,
+                    text="Drafting your revised roadmap..."
+                )
+
+                status = st.empty()
+
+                weeks_expected = (
+                    ss.roadmap_plan["constraints"]["duration_weeks"]
+                )
+
+                def on_revision_chunk(text):
+                    done = stream_progress(text, weeks_expected)
+
+                    revision_bar.progress(
+                        done,
+                        text=(
+                            f"Drafting revision... "
+                            f"{round(done * 100)}%"
+                        )
+                    )
+
+                try:
+                    hits = rag_system.retrieve(ss, instruction)
+
+                    revision = revise_roadmap(
+                        client,
+                        ss.roadmap_plan,
+                        ss.plan_profile,
+                        instruction,
+                        settings=settings,
+                        history=ss.messages,
+                        progress_text=progress.progress_summary_text(
+                            ss.tasks
+                        ),
+                        hits=hits,
+                        on_chunk=on_revision_chunk,
+                        on_reset=lambda: revision_bar.progress(
+                            0.0,
+                            text="Restarting revision from a clean state..."
+                        ),
+                        on_status=status.info,
+                    )
+
+                except PlanValidationError as exc:
+                    st.error(
+                        "The revised roadmap did not satisfy the "
+                        "required limits. Your existing roadmap "
+                        "has not been changed."
+                    )
+
+                    with st.expander("Validation details"):
+                        for line in exc.errors:
+                            st.write(f"- {line}")
+
+                except (GenerationError, ValueError) as exc:
+                    st.error(f"Revision failed: {exc}")
+
+                except Exception as exc:
+                    st.error(f"Unexpected revision error: {exc}")
+
+                else:
+                    progress.stage_revision(
+                        ss,
+                        revision,
+                        instruction.strip()
+                    )
+
+                    st.success(
+                        "Revision drafted! Review it above and click "
+                        "'Apply Revised Roadmap' to save the changes."
+                    )
+
+                    st.rerun()
+
+                finally:
+                    revision_bar.empty()
+                    status.empty()
+
+        # --------------------------------------------------------------
+        # 3. Coach conversation
+        # --------------------------------------------------------------
+        st.divider()
+        st.markdown("### 💬 Chat with Your Roadmap Coach")
+
         for message in ss.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
+
                 if message.get("sources"):
-                    with st.expander(f"Sources: {rag_system.summarize_sources(message['sources'])}"):
+                    with st.expander(
+                        "Sources: "
+                        + rag_system.summarize_sources(
+                            message["sources"]
+                        )
+                    ):
                         for hit in message["sources"]:
-                            st.markdown(f"**{hit['source']}, p. {hit['page']}**")
+                            st.markdown(
+                                f"**{hit['source']}, "
+                                f"p. {hit['page']}**"
+                            )
                             st.caption(hit["text"])
 
-    question = st.chat_input("Ask about your roadmap...")
-    if ss.queued_question:
-        question, ss.queued_question = ss.queued_question, None
+        question = st.chat_input("Ask about your roadmap...")
 
-    if question:
-        if not ss.roadmap_plan:
-            st.warning("Please generate a roadmap before chatting.")
-        elif client is None:
-            show_client_problem()
-        else:
-            with st.chat_message("user"):
-                st.markdown(question)
-            hits = []
-            try:
-                hits = rag_system.retrieve(ss, question)
-            except Exception as exc:  # noqa: BLE001
-                st.warning(f"PDF search was skipped: {exc}")
-            llm_messages = prompts.build_chat_messages(
-                plan_outline(ss.roadmap_plan),
-                progress.progress_summary_text(ss.tasks),
-                ss.messages,
-                question,
-                hits,
-            )
-            with st.chat_message("assistant"):
-                box = st.empty()
-                parts = []
+        if ss.queued_question:
+            question = ss.queued_question
+            ss.queued_question = None
+
+        if question:
+            if not ss.roadmap_plan:
+                st.warning("Generate a roadmap first.")
+
+            elif client is None:
+                show_client_problem()
+
+            else:
+                with st.chat_message("user"):
+                    st.markdown(question)
+
+                hits = []
+
                 try:
-                    for piece in generate_response(client, llm_messages, settings=settings, max_tokens=2000):
-                        parts.append(piece)
-                        box.markdown("".join(parts) + "▌")
-                    answer = "".join(parts).strip()
-                    box.markdown(answer)
-                    if hits:
-                        st.caption("Sources: " + rag_system.summarize_sources(hits))
-                    ss.messages = ss.messages + [
-                        {"role": "user", "content": question},
-                        {"role": "assistant", "content": answer, "sources": hits},
-                    ]
-                    ss.failed_question = None
-                except StreamInterruptedError as exc:
-                    box.markdown(exc.partial_text)
-                    st.warning("The connection dropped part-way through. This partial answer was "
-                               "not saved - retry to get a complete one.")
-                    ss.failed_question = question
-                except GenerationError as exc:
-                    box.empty()
-                    st.error(str(exc))
-                    ss.failed_question = question
+                    hits = rag_system.retrieve(ss, question)
 
-    if ss.failed_question and ss.roadmap_plan:
-        if st.button("🔁 Retry last question"):
-            ss.queued_question, ss.failed_question = ss.failed_question, None
-            st.rerun()
+                except Exception as exc:
+                    st.warning(
+                        f"PDF search was skipped: {exc}"
+                    )
+
+                llm_messages = prompts.build_chat_messages(
+                    plan_outline(ss.roadmap_plan),
+                    progress.progress_summary_text(ss.tasks),
+                    ss.messages,
+                    question,
+                    hits,
+                )
+
+                with st.chat_message("assistant"):
+                    box = st.empty()
+                    parts = []
+
+                    try:
+                        for piece in generate_response(
+                            client,
+                            llm_messages,
+                            settings=settings,
+                            max_tokens=2000
+                        ):
+                            parts.append(piece)
+                            box.markdown(
+                                "".join(parts) + "▌"
+                            )
+
+                        answer = "".join(parts).strip()
+                        box.markdown(answer)
+
+                        ss.messages = ss.messages + [
+                            {
+                                "role": "user",
+                                "content": question
+                            },
+                            {
+                                "role": "assistant",
+                                "content": answer,
+                                "sources": hits
+                            },
+                        ]
+
+                        ss.failed_question = None
+
+                    except StreamInterruptedError as exc:
+                        box.markdown(exc.partial_text)
+
+                        st.warning(
+                            "The connection was interrupted. "
+                            "The incomplete answer was not saved. "
+                            "Please retry."
+                        )
+
+                        ss.failed_question = question
+
+                    except GenerationError as exc:
+                        box.empty()
+                        st.error(str(exc))
+                        ss.failed_question = question
+
+        if ss.failed_question and ss.roadmap_plan:
+            if st.button("🔁 Retry Last Question"):
+                ss.queued_question = ss.failed_question
+                ss.failed_question = None
+                st.rerun()
+
 
 # ==========================================================================
 # Tab 3 - Progress Tracker
