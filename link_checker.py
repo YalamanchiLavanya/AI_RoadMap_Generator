@@ -1,12 +1,16 @@
-"""Check that recommended links work before they are presented as curated.
 
-The model is told never to invent URLs, but it can still be wrong. Every link in a
-roadmap is checked here, and only links that actually answered are shown as
-verified. Everything else is labelled honestly.
+"""Check the reachability of recommended learning-resource URLs.
 
-Because the server makes these requests, links that point at private, loopback, or
-link-local addresses are refused (including after a redirect).
+The checker determines whether a URL responds to an HTTP request.
+A successful HTTP response does not prove that the resource is relevant,
+current, beginner-friendly, or suitable for the selected language.
+
+Resource quality must be assessed separately during manual evaluation.
+
+Private, loopback, and link-local addresses are refused, including
+redirect destinations.
 """
+
 from __future__ import annotations
 
 import ipaddress
@@ -181,3 +185,29 @@ def resource_cells(resource: dict, results: dict[str, LinkResult] | None) -> tup
     if result.status == INVALID:
         return title, f"❌ Invalid link ({result.detail}) - search for the exact title"
     return title, f"⚠️ Could not verify ({result.detail}): `{url}`"
+
+def assess_resource_quality(
+    *,
+    topic_relevant: bool | None = None,
+    beginner_friendly: bool | None = None,
+    current: bool | None = None,
+    language_suitable: bool | None = None,
+) -> dict:
+    """Record manual resource-quality assessment.
+
+    These values must come from human review, not HTTP status.
+    """
+    checks = {
+        "topic_relevant": topic_relevant,
+        "beginner_friendly": beginner_friendly,
+        "current": current,
+        "language_suitable": language_suitable,
+    }
+
+    assessed = all(value is not None for value in checks.values())
+
+    return {
+        "checks": checks,
+        "assessed": assessed,
+        "suitable": all(checks.values()) if assessed else None,
+    }

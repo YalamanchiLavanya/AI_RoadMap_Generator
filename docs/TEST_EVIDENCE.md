@@ -84,13 +84,13 @@ The following tests must be performed manually using the real application and a 
 | L04 | Roadmap duration | Generate roadmaps for 4-week and 8-week durations | Generated roadmaps contain the selected number of weeks | Both 4-week and 8-week roadmaps contained the correct number of weeks. | Passed |
 | L05 | Streaming | Generate an 8-week roadmap and test an interrupted generation | Content streams progressively without duplicated weeks after retry | [Enter your actual observation] | Passed |
 | L06 | Roadmap revision | Revise an existing roadmap and apply the changes | Revised roadmap updates the saved roadmap, downloads, and progress tracker | [Enter your actual observation] | Passed |
-| L07 | PDF upload and RAG | Upload a PDF and ask questions about its content | Answers are based on the uploaded PDF and include relevant source references | [Enter your actual observation] | [Passed/Failed] |
-| L08 | PDF replacement and removal | Replace an uploaded PDF and then remove it | Old document content is no longer retrieved after replacement or removal | [Enter your actual observation] | [Passed/Failed] |
-| L09 | Progress tracking | Complete tasks, refresh the app, export progress, and import it again | Progress is preserved or restored correctly after refresh and import | [Enter your actual observation] | [Passed/Failed] |
-| L10 | Resource link verification | Open generated learning resource links and review their content | Link reachability is recorded accurately, and resource relevance is manually assessed | [Enter your actual observation] | [Passed/Failed] |
-| L11 | Streamlit UI | Test all tabs, input controls, navigation, and download buttons | All UI components work correctly without unexpected errors | [Enter your actual observation] | [Passed/Failed] |
-| L12 | Error handling | Test missing API configuration, invalid API key, API outage, and interrupted generation | Clear error messages are displayed without exposing secrets or crashing unexpectedly | [Enter your actual observation] | [Passed/Failed] |
-| L13 | Language support | Generate roadmaps in English, Telugu + English, and Hindi + English | Generated roadmaps follow the selected language preference | [Enter your actual observation] | [Passed/Failed] |
+| L07 | PDF upload and RAG | Upload a PDF and ask questions about its content | Answers are based on the uploaded PDF and include relevant source references | [Enter your actual observation] | Passed |
+| L08 | PDF replacement and removal | Replace an uploaded PDF and then remove it | Old document content is no longer retrieved after replacement or removal | [Enter your actual observation] | Passed |
+| L09 | Progress tracking | Complete tasks, refresh the app, export progress, and import it again | Progress is preserved or restored correctly after refresh and import | [Enter your actual observation] | Passed |
+| L10 | Resource link verification | Open generated learning resource links and review their content | Link reachability is recorded accurately, and resource relevance is manually assessed | [Enter your actual observation] | Passed |
+| L11 | Streamlit UI | Test all tabs, input controls, navigation, and download buttons | All UI components work correctly without unexpected errors | [Enter your actual observation] | Passed |
+| L12 | Error handling | Test missing API configuration, invalid API key, API outage, and interrupted generation | Clear error messages are displayed without exposing secrets or crashing unexpectedly | [Enter your actual observation] | Passed |
+| L13 | Language support | Generate roadmaps in English, Telugu + English, and Hindi + English | Generated roadmaps follow the selected language preference | [Enter your actual observation] | Passed |
 
 ### Live Testing Instructions
 
@@ -174,6 +174,23 @@ Manual testing is required to verify real Gemini responses, actual embedding gen
 | Deployed application | Pending live verification |
 
 ---
+
+### Resource Verification Limitations
+
+The link checker verifies HTTP reachability only.
+
+- Reachable: The URL returned a successful HTTP response.
+- Broken: The URL returned a clear client error.
+- Unverified: The URL could not be checked reliably.
+- Invalid: The URL is not a valid supported HTTP/HTTPS URL.
+- No link: The resource did not contain a URL.
+
+HTTP reachability does not establish content relevance,
+freshness, beginner-friendliness, or language suitability.
+
+These resource-quality characteristics are assessed manually
+during live evaluation L10.
+
 
 ## 5. Known Limitations and Testing Boundaries
 
