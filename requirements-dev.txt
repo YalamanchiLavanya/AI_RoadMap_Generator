@@ -1,3 +1,3 @@
--r requirements.txt
-reportlab   # builds the real PDFs used by the PDF tests
-pytest      # optional: the tests also run with plain `python -m unittest`
+   -r requirements.txt
+   pytest>=9.0
+   reportlab    # optional: the tests also run with plain `python -m unittest`

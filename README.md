@@ -73,8 +73,8 @@ AI_Learning_Roadmap_Generator/
 ### 1. Clone the repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
-cd AI_Learning_Roadmap_Generator
+git clone https://github.com/YalamanchiLavanya AI_RoadMap_Generator.git
+cd AI_RoadMap_Generator
 ```
 
 Replace `YOUR_GITHUB_REPOSITORY_URL` with your actual repository URL.

@@ -15,7 +15,7 @@ different PDF for the replacement step.
 | 4:45 | Progress tab | Tick a few tasks (they came from the roadmap). Back in Coach ask "Am I on track?" - the answer uses what is done. Export progress, refresh the page, restore it. |
 | 5:45 | Replace the PDF with a different one | Old index clears immediately; index the new file; ask a question - answers come only from the new file. Remove the PDF (X) - index clears. |
 | 6:30 | Failure handling (optional) | Disconnect Wi-Fi mid-answer: friendly message, partial answer not saved, **Retry** button. Reconnect and retry. |
-| 6:45 | Show the tests | Run `python -m unittest discover -s tests -t . -v` and show 100 tests passing; open `docs/TEST_EVIDENCE.md`. |
+| 6:45 | Show the tests | Run `python -m pytest -v` and show 100 tests passing; open `docs/TEST_EVIDENCE.md`. |
 
 Tips: do the live matrix cases in `docs/TEST_EVIDENCE.md` before recording so you know the outcomes,
 and fill in that table with what you actually observe.

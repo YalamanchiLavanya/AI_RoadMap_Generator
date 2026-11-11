@@ -9,8 +9,67 @@ This file only handles the interface. Logic lives in:
   link_checker.py   verifies recommended links
 """
 from datetime import date
+import re
 
 import streamlit as st
+
+
+
+
+def model_history(messages, active_hash):
+    """Exclude conversation turns that were grounded in a different/removed PDF."""
+    return [
+        message for message in messages
+        if not message.get("doc_hash") or message.get("doc_hash") == active_hash
+    ]
+
+
+_CITATION_PATTERN = re.compile(
+    r"\[source:\s*([^,\]\n]+),\s*p\.\s*(\d+)\]",
+    flags=re.IGNORECASE,
+)
+
+
+def validate_coach_citations(answer, retrieved_hits, active_pdf_hash):
+    """Keep only filename/page citations that exist in the current retrieved passages."""
+    if not active_pdf_hash or not retrieved_hits:
+        return _CITATION_PATTERN.sub("", answer).strip()
+
+    valid_references = {
+        (str(hit.get("source", "")).strip(), int(hit.get("page", 0)))
+        for hit in retrieved_hits
+        if hit.get("source") and hit.get("page") is not None
+    }
+
+    def replace_unverified(match):
+        filename = match.group(1).strip()
+        try:
+            page = int(match.group(2))
+        except ValueError:
+            return "[unverified reference removed]"
+        if (filename, page) not in valid_references:
+            return "[unverified reference removed]"
+        return match.group(0)
+
+    return _CITATION_PATTERN.sub(replace_unverified, answer).strip()
+
+
+def add_active_plan_header(markdown, plan, version):
+    """Make downloaded Markdown state the constraints of the saved active plan."""
+    constraints = plan.get("constraints", {})
+    hours = constraints.get("hours_per_week")
+    weeks = constraints.get("duration_weeks")
+    line = (
+        f"\n\n**Active roadmap settings:** {hours} study hours/week · "
+        f"{weeks} weeks · version {version}\n"
+    )
+    # Insert after the first Markdown heading, if one exists.
+    lines = markdown.splitlines()
+    for index, value in enumerate(lines):
+        if value.startswith("# "):
+            lines.insert(index + 1, line.strip())
+            return "\n".join(lines) + ("\n" if markdown.endswith("\n") else "")
+    return line.strip() + "\n\n" + markdown
 
 
 def apply_custom_css():
@@ -411,6 +470,8 @@ with st.sidebar:
     current_skills = st.text_area("Current skills", value="Python basics, Excel basics")
     level = st.selectbox("Current skill level", LEVELS)
     hours_per_week = st.slider("Study hours per week", MIN_HOURS_PER_WEEK, MAX_HOURS_PER_WEEK, 10)
+    st.caption("⚙️ These settings are used when you click **Generate My Roadmap** (a new plan). "
+           "The active roadmap's settings are shown on the Roadmap tab.")
     duration_weeks = st.slider("Roadmap duration (weeks)", MIN_WEEKS, MAX_WEEKS, 8)
     learning_style = st.selectbox("Preferred learning style", LEARNING_STYLES)
     learning_language = st.selectbox("Resource language", RESOURCE_LANGUAGES)
@@ -430,6 +491,8 @@ with st.sidebar:
         st.info("A different PDF was selected. The old index was cleared - index the new file to use it.")
 
     pdf_index = rag_system.get_pdf_index(ss)
+    active_pdf_hash = uploaded_hash if pdf_index is not None else None
+    active_pdf_name = pdf_index.filename if pdf_index is not None else None
     if pdf_index:
         st.success(
             f"Indexed: **{pdf_index.filename}** - {pdf_index.page_count} pages, "
@@ -536,12 +599,20 @@ with tab_roadmap:
 
     plan = ss.roadmap_plan
     if plan:
+        c = plan.get("constraints", {})
+        st.info(
+            f"**Active roadmap · version {ss.plan_version}** — "
+            f"{c.get('hours_per_week')} study hours/week · {c.get('duration_weeks')} weeks"
+        )
         st.caption(plan_check_summary(plan) + f" · version {ss.plan_version}")
         if ss.plan_warnings or ss.plan_notes:
             with st.expander("Notes from the plan check", expanded=False):
                 for line in ss.plan_notes + ss.plan_warnings:
                     st.write(f"- {line}")
         markdown = progress.plan_markdown_for_state(ss, ss.links_checked_on)
+        markdown = add_active_plan_header(
+            markdown, ss.roadmap_plan, ss.plan_version
+        )
         st.markdown(markdown)
         left, right = st.columns(2)
         left.download_button(
@@ -699,7 +770,7 @@ with tab_coach:
                         ss.plan_profile,
                         instruction,
                         settings=settings,
-                        history=ss.messages,
+                        history=model_history(ss.messages, active_pdf_hash),
                         progress_text=progress.progress_summary_text(
                             ss.tasks
                         ),
@@ -755,6 +826,11 @@ with tab_coach:
 
         for message in ss.messages:
             with st.chat_message(message["role"]):
+                if message.get("doc_hash") and message.get("doc_hash") != active_pdf_hash:
+                    st.caption(
+                        f"Earlier document context: {message.get('doc_name', 'previous PDF')} "
+                        "(not included in the current model context)."
+                    )
                 st.markdown(message["content"])
 
                 if message.get("sources"):
@@ -798,11 +874,21 @@ with tab_coach:
                         f"PDF search was skipped: {exc}"
                     )
 
+                active_history = model_history(ss.messages, active_pdf_hash)
+                coach_question = question
+                if active_pdf_hash and hits:
+                    coach_question += (
+                        "\\n\\nPDF citation rule: cite retrieved PDF passages only "
+                        "using exactly [source: filename.pdf, p. 3]. Use the exact "
+                        "filename and page number from the supplied passages. "
+                        "Do not invent citations. If a claim is not supported by "
+                        "the passages, say so instead of citing it."
+                    )
                 llm_messages = prompts.build_chat_messages(
                     plan_outline(ss.roadmap_plan),
                     progress.progress_summary_text(ss.tasks),
-                    ss.messages,
-                    question,
+                    active_history,
+                    coach_question,
                     hits,
                 )
 
@@ -823,17 +909,29 @@ with tab_coach:
                             )
 
                         answer = "".join(parts).strip()
+                        answer = validate_coach_citations(
+                            answer, hits, active_pdf_hash
+                        )
                         box.markdown(answer)
+
+                        turn_metadata = {}
+                        if active_pdf_hash and hits:
+                            turn_metadata = {
+                                "doc_hash": active_pdf_hash,
+                                "doc_name": active_pdf_name,
+                            }
 
                         ss.messages = ss.messages + [
                             {
                                 "role": "user",
-                                "content": question
+                                "content": question,
+                                **turn_metadata,
                             },
                             {
                                 "role": "assistant",
                                 "content": answer,
-                                "sources": hits
+                                "sources": hits,
+                                **turn_metadata,
                             },
                         ]
 
@@ -891,6 +989,12 @@ with tab_progress:
     if not ss.roadmap_plan:
         st.info("Generate a roadmap (or restore saved progress) to start tracking.")
     else:
+        active_constraints = ss.roadmap_plan.get("constraints", {})
+        st.info(
+            f"**Active roadmap · version {ss.plan_version}** — "
+            f"{active_constraints.get('hours_per_week')} study hours/week · "
+            f"{active_constraints.get('duration_weeks')} weeks"
+        )
         stats = progress.progress_stats(ss.tasks)
         st.progress(
             stats["done"] / stats["total"] if stats["total"] else 0.0,

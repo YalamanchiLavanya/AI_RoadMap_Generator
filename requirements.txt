@@ -1,10 +1,7 @@
-streamlit>=1.35
-google-genai
-python-dotenv
-pypdf
-sentence-transformers
-faiss-cpu
-numpy
-pytest
-reportlab
-pytest>=9.0
+   streamlit>=1.35
+   google-genai
+   python-dotenv
+   pypdf
+   sentence-transformers
+   faiss-cpu
+   numpy
