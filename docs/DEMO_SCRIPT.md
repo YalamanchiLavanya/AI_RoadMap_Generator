@@ -11,10 +11,10 @@ Make sure you have:
 - A small PDF syllabus with at least 3 pages.
 - A second, different PDF for testing document replacement.
 - A stable internet connection.
-- The application running locally or on Streamlit Cloud.
+- The application running locally or on Streamlit Cloud (`python -m streamlit run app.py`).
 - A few tasks ready to mark as completed during the demo.
 
-**Important:** Use your actual observations during the recording. Do not demonstrate a feature as successful unless you have tested it.
+**Important:** Use your actual observations during the recording. Do not demonstrate a feature as successful unless you have tested it. Run the live cases in `docs/TEST_EVIDENCE.md` (L05–L13) before recording, so the demo shows behaviour you have already observed.
 
 ## Demo Timeline (6–7 Minutes)
 
@@ -25,7 +25,7 @@ Make sure you have:
 | 1:30–2:00 | Review the generated roadmap | Scroll through the roadmap. Show the weekly learning tables, estimated hours, activities, and milestones. Point out the plan validation summary, including the number of weeks and the busiest week's hours. Open **Notes from the plan check**. |
 | 2:00–2:30 | Demonstrate learning resources | Show the resources table. Explain that only verified links are presented as clickable verified resources. Show how unchecked or inaccessible links are labelled appropriately, such as "Could not verify" or a suggestion to search for the exact resource title. Open one verified link. |
 | 2:30–3:15 | Generate a roadmap using a PDF | Upload the first syllabus PDF in the sidebar. Click **Index this PDF**, enable PDF usage for generation, and generate a roadmap. Explain: "The application extracts text from the uploaded PDF, creates searchable embeddings, retrieves relevant content, and uses it to improve the roadmap." Show document references with filenames and page numbers, if generated. |
-| 3:15–3:45 | Demonstrate the Roadmap Coach | Open the Coach tab. Ask a question about prerequisites or a topic covered in the uploaded syllabus. Show the answer and its document citations. Open the Sources section to demonstrate the retrieved PDF references. |
+| 3:15–3:45 | Demonstrate the Roadmap Coach | Open the Coach tab. Ask a question about prerequisites or a topic covered in the uploaded syllabus. Show the answer and its document citations in the form `(filename.pdf, p. N)`. Open the Sources section to demonstrate the retrieved PDF references. Explain that any citation that does not match a retrieved passage is removed. |
 | 3:45–4:45 | Revise and apply the roadmap | Open the roadmap revision workflow. Enter: **"I can only study 5 hours a week from now on."** Draft the revision. Show the proposed changes and preview. Explain that drafting does not immediately change the active roadmap. Click **Apply revised roadmap**. Return to the Roadmap tab and show the updated plan. Demonstrate that the download and progress tracker reflect the revised roadmap. |
 | 4:45–5:45 | Demonstrate progress tracking | Open the Progress Tracker tab. Mark a few learning tasks as completed. Show the progress statistics and remaining tasks. Return to the Coach and ask: **"Am I on track?"** Explain that the coach receives the learner's current progress information. Export the progress data, refresh the application, and import the exported file to demonstrate restoration. |
 | 5:45–6:30 | Demonstrate PDF replacement and removal | Replace the first PDF with the second, different PDF. Show that the previous document index is cleared and the new document is indexed. Ask a question related to the second PDF. Verify that the answer uses the new document rather than the old one. Remove the uploaded PDF and demonstrate that the document index and old document context are cleared. |
@@ -40,11 +40,12 @@ Make sure you have:
 4. **Streaming and retry handling:** Handles interrupted or empty model responses without duplicating roadmap content.
 5. **PDF-based RAG:** Extracts PDF content, creates embeddings, retrieves relevant passages, and uses them as additional context.
 6. **Roadmap Coach:** Answers learner questions using the active roadmap, progress information, and relevant PDF context.
-7. **Citation validation:** Checks PDF citations against retrieved document passages and removes unsupported references.
-8. **Roadmap revision:** Allows learners to draft, review, apply, or discard proposed changes.
-9. **Progress tracking:** Tracks completed and pending tasks and connects progress with the Roadmap Coach.
-10. **Resource verification:** Checks learning resource URLs and distinguishes verified links from links that could not be verified.
-11. **Progress export and import:** Allows learners to save and restore their progress.
+7. **Citation validation:** Checks PDF citations in the form `(filename.pdf, p. N)` against retrieved document passages and removes unsupported references.
+8. **PDF replacement and removal:** Clears the old document index, and excludes messages grounded in an earlier PDF from the context sent to the model.
+9. **Roadmap revision:** Allows learners to draft, review, apply, or discard proposed changes.
+10. **Progress tracking:** Tracks completed and pending tasks and connects progress with the Roadmap Coach.
+11. **Resource verification:** Checks learning resource URLs and distinguishes verified links from links that could not be verified.
+12. **Progress export and import:** Allows learners to save and restore their progress.
 
 ## Automated Test Results
 
@@ -70,7 +71,7 @@ python -m pytest -v
 110 passed, 23 subtests passed in 4.11s
 ```
 
-These results represent the automated test run completed on the local development environment. They do not replace live API, deployment, or manual testing.
+These results were recorded from a test run on the local development environment. They do not replace live API, deployment, or manual testing.
 
 ## Recording Tips
 
@@ -95,7 +96,7 @@ Record the following for each case:
 - Pass or fail status.
 - Screenshot or recording evidence, where required.
 
-**Important:** The automated test results above are verified. Manual evaluation cases and screenshots must be completed separately using actual application observations.
+**Important:** The automated test results above were recorded from a local test run. Manual evaluation cases and screenshots must be completed separately using actual application observations. A case is marked Passed only after it has been executed.
 
 ## Project Documentation
 
