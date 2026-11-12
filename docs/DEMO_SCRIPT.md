@@ -30,7 +30,7 @@ Make sure you have:
 | 4:45–5:45 | Demonstrate progress tracking | Open the Progress Tracker tab. Mark a few learning tasks as completed. Show the progress statistics and remaining tasks. Return to the Coach and ask: **"Am I on track?"** Explain that the coach receives the learner's current progress information. Export the progress data, refresh the application, and import the exported file to demonstrate restoration. |
 | 5:45–6:30 | Demonstrate PDF replacement and removal | Replace the first PDF with the second, different PDF. Show that the previous document index is cleared and the new document is indexed. Ask a question related to the second PDF. Verify that the answer uses the new document rather than the old one. Remove the uploaded PDF and demonstrate that the document index and old document context are cleared. |
 | 6:30–6:45 | Demonstrate failure handling (optional) | If practical, demonstrate an API or network failure. Explain how the application handles errors with a user-friendly message. Show retry behaviour only if it is available and successfully tested. |
-| 6:45–7:00 | Show automated tests | Open the terminal and run `python -m pytest -v`. Show the final test summary: **104 passed, 23 subtests passed, 0 failed**. Open `docs/TEST_EVIDENCE.md` and briefly explain that automated and manual testing evidence is maintained there. |
+| 6:45–7:00 | Show automated tests | Open the terminal and run `python -m pytest -v`. Show the final test summary: **110 passed, 23 subtests passed, 0 failed**. Open `docs/TEST_EVIDENCE.md` and briefly explain that automated and manual testing evidence is maintained there. |
 
 ## Key Features to Highlight
 
@@ -52,11 +52,11 @@ The latest local test run completed successfully.
 
 | Test result | Count |
 |---|---:|
-| Tests collected | 104 |
-| Tests passed | 104 |
+| Tests collected | 110 |
+| Tests passed | 110 |
 | Subtests passed | 23 |
 | Failed | 0 |
-| Execution time | 4.31 seconds |
+| Execution time | 4.11 seconds |
 
 **Command used:**
 

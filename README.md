@@ -49,7 +49,9 @@ AI_Roadmap_Generator/
 │
 ├── tests/                  # Automated pytest test suite
 │   ├── helpers.py
+│   │── test_coach_context.py
 │   ├── test_links_and_markdown.py
+│   ├── test_pdf_replacement_flow.py
 │   ├── test_progress_and_revision.py
 │   ├── test_rag_system.py
 │   ├── test_streaming.py
@@ -83,12 +85,10 @@ The structure highlights the main project files. Additional files may be present
 ## Setup and Installation
 
 ### 1. Clone the repository
-
 ```bash
 git clone https://github.com/YalamanchiLavanya/AI_RoadMap_Generator.git
 cd AI_RoadMap_Generator
 ```
-
 ### 2. Create and activate a virtual environment
 
 **Windows PowerShell:**
@@ -186,11 +186,11 @@ The lock file should be used with a compatible Python environment. Its contents 
 |---|---:|
 | Python version | 3.12.10 |
 | Pytest version | 9.2.0 |
-| Tests collected | 100 |
-| Tests passed | 100 |
+| Tests collected | 110 |
+| Tests passed | 110 |
 | Tests failed | 0 |
 | Subtests passed | 23 |
-| Execution time | 4.78 seconds |
+| Execution time | 4.11 seconds |
 
 These are previously recorded local test results, not a claim that the latest changes have been independently verified from a clean Git checkout.
 

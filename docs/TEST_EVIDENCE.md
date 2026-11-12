@@ -6,12 +6,12 @@ Repository: https://github.com/YalamanchiLavanya/AI_RoadMap_Generator
 
 | Item | Value |
 |---|---|
-| Tested commit | [FILL: output of `git rev-parse HEAD`] |
+| Tested commit | e687611dc9045053a7b2f500e756119c0ae7bacc |
 | Date tested | [FILL: date of the automated run and of the live tests] |
 | Operating system | Windows |
 | Python version | 3.12.10 |
 | Pytest version | 9.2.0 |
-| Gemini model used in live tests | [FILL: exact model name from `config.py`] |
+| Gemini model used in live tests | gemini-3.1-flash-lite |
 | Embedding model | `sentence-transformers/all-MiniLM-L6-v2` |
 | Retrieval backend observed in the app | [FILL: FAISS or NumPy fallback, as shown in the app] |
 | Dependency configuration | `requirements-lock.txt` (exact versions used for the recorded run) |
@@ -90,11 +90,16 @@ These tests are in `tests/test_coach_context.py` and cover `coach_context.py` (`
 
 | ID | Category | Scenario | Expected Result | Evidence (Test) | Result |
 |---|---|---|---|---|---|
-| A27 | PDF context | Messages grounded in PDF A exist; PDF B becomes active | Messages derived from A are not sent to the model as current context; general conversation is kept | `CoachContextTests.test_replaced_pdf_context_is_not_sent_to_model` | [FILL: Pass/Fail] |
-| A28 | PDF context | PDF is removed | No document-derived messages are sent to the model | `CoachContextTests.test_after_removal_no_document_messages_are_sent` | [FILL: Pass/Fail] |
-| A29 | Coach citations | Answer cites one retrieved file/page and one that was not retrieved | The retrieved reference is kept; the other is replaced with an "unverified reference removed" marker | `CoachContextTests.test_invented_citation_is_removed_valid_one_kept` | [FILL: Pass/Fail] |
-| A30 | Coach citations | No PDF is active but the answer contains a citation | Citation is removed | `CoachContextTests.test_citations_are_stripped_when_no_pdf_is_active` | [FILL: Pass/Fail] |
-| A31 | PDF context | Index PDF A, replace with PDF B, then remove it | Retrieval uses B after replacement and nothing after removal; A-derived facts are absent from the messages sent to the model at each stage | `ReplacementFlow.test_pdf_a_then_b_then_removed` | [FILL: Pass/Fail] |
+| A27 | PDF context | Messages grounded in PDF A exist; PDF B becomes active | Messages derived from A are not sent to the model as current context; general conversation is kept | `CoachContextTests.test_replaced_pdf_context_is_not_sent_to_model` | Pass |
+| A28 | PDF context | PDF is removed | No document-derived messages are sent to the model | `CoachContextTests.test_after_removal_no_document_messages_are_sent` | Pass |
+| A29 | Coach citations | Answer cites one retrieved file/page and one that was not retrieved | The retrieved reference is kept; the other is replaced with an "unverified reference removed" marker | `CoachContextTests.test_invented_citation_is_removed_valid_one_kept` | Pass |
+| A30 | Coach citations | No PDF is active but the answer contains a citation | Citation is removed | `CoachContextTests.test_citations_are_stripped_when_no_pdf_is_active` | Pass |
+| A31 | PDF context | Index PDF A, replace with PDF B, then remove it | Retrieval uses B after replacement and nothing after removal; A-derived facts are absent from the messages sent to the model at each stage | `ReplacementFlow.test_pdf_a_then_b_then_removed` | Pass |
+| A32 | Coach citations | Answer cites `(file.pdf, p. N)` for a retrieved file and page | Citation is kept | `CoachContextTests.test_valid_paren_citation_is_kept` | Pass |
+| A33 | Coach citations | Answer cites a filename that was not retrieved | Citation is replaced with an "unverified reference removed" marker | `CoachContextTests.test_invalid_paren_filename_is_removed` | Pass |
+| A34 | Coach citations | Answer cites the right file but a page that was not retrieved | Citation is replaced with the marker | `CoachContextTests.test_invalid_paren_page_is_removed` | Pass |
+| A35 | Coach citations | No PDF is active but the answer contains a `(file.pdf, p. N)` citation | Citation is removed | `CoachContextTests.test_paren_citations_stripped_when_no_pdf_active` | Pass |
+| A36 | PDF context | Remove a PDF when none was indexed | Nothing breaks; general messages are kept | `ReplacementFlow.test_removal_with_no_prior_pdf_is_harmless` | Pass |
 
 **What these tests establish:** the application filters conversation history by the active document and removes citations that do not match retrieved passages. **What they do not establish:** that a retrieved page actually supports the claim it is attached to. That is assessed manually in Section 3.4.
 
@@ -190,12 +195,12 @@ For the "not covered" question, the expected behaviour is that the coach states 
 
 | Metric | Result |
 |---|---|
-| Total automated tests collected | [FILL] |
-| Passed tests | [FILL] |
-| Failed tests | [FILL] |
-| Subtests passed | [FILL] |
-| Collection errors | [FILL] |
-| Execution time | [FILL] seconds |
+| Total automated tests collected | 110 |
+| Passed tests | 110 |
+| Failed tests | 0 |
+| Subtests passed | 23 |
+| Collection errors | 0 |
+| Execution time | 4.11 seconds |
 | Test framework | Pytest 9.2.0 |
 | Python version | 3.12.10 |
 
