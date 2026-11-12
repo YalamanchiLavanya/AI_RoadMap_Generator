@@ -837,12 +837,8 @@ with tab_coach:
                 coach_question = question
                 if active_pdf_hash and hits:
                     coach_question += (
-                        "\\n\\nPDF citation rule: cite retrieved PDF passages only "
-                        "using exactly [source: filename.pdf, p. 3]. Use the exact "
-                        "filename and page number from the supplied passages. "
-                        "Do not invent citations. If a claim is not supported by "
-                        "the passages, say so instead of citing it."
-                    )
+                                        "\n\nPDF citation rule: cite retrieved PDF passages only "
+                                        "using exactly (filename.pdf, p. 3). Use the exact ")
                 llm_messages = prompts.build_chat_messages(
                     plan_outline(ss.roadmap_plan),
                     progress.progress_summary_text(ss.tasks),

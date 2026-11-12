@@ -10,31 +10,32 @@ def model_history(messages, active_hash):
     ]
 
 
-_CITATION_PATTERN = re.compile(
-    r"\[source:\s*([^,\]\n]+),\s*p\.\s*(\d+)\]",
-    flags=re.IGNORECASE,
+# Canonical format (required by COACH_SYSTEM_PROMPT):  (filename.pdf, p. 3)
+# Old bracket format still accepted so earlier saved answers keep working.
+_PAREN = re.compile(r"\(\s*([^(),\n]+?\.pdf)\s*,\s*pp?\.\s*(\d+)\s*\)", re.IGNORECASE)
+_BRACKET = re.compile(
+    r"\[\s*source:\s*([^,\]\n]+?)\s*,\s*pp?\.\s*(\d+)\s*\]", re.IGNORECASE
 )
+REMOVED_MARKER = "[unverified reference removed]"
 
 
 def validate_coach_citations(answer, retrieved_hits, active_pdf_hash):
     """Keep only filename/page citations that exist in the current retrieved passages."""
     if not active_pdf_hash or not retrieved_hits:
-        return _CITATION_PATTERN.sub("", answer).strip()
+        answer = _PAREN.sub("", answer)
+        answer = _BRACKET.sub("", answer)
+        return re.sub(r"[ \t]{2,}", " ", answer).strip()
 
-    valid_references = {
-        (str(hit.get("source", "")).strip(), int(hit.get("page", 0)))
-        for hit in retrieved_hits
-        if hit.get("source") and hit.get("page") is not None
-    }
+    valid = set()
+    for hit in retrieved_hits:
+        source, page = hit.get("source"), hit.get("page")
+        if source and page is not None:
+            valid.add((str(source).strip().lower(), int(page)))
 
-    def replace_unverified(match):
-        filename = match.group(1).strip()
-        try:
-            page = int(match.group(2))
-        except ValueError:
-            return "[unverified reference removed]"
-        if (filename, page) not in valid_references:
-            return "[unverified reference removed]"
-        return match.group(0)
+    def check(match):
+        key = (match.group(1).strip().lower(), int(match.group(2)))
+        return match.group(0) if key in valid else REMOVED_MARKER
 
-    return _CITATION_PATTERN.sub(replace_unverified, answer).strip()
+    answer = _PAREN.sub(check, answer)
+    answer = _BRACKET.sub(check, answer)
+    return answer.strip()
