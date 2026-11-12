@@ -6,7 +6,7 @@ Repository: https://github.com/YalamanchiLavanya/AI_RoadMap_Generator
 
 | Item | Value |
 |---|---|
-| Tested commit | e687611dc9045053a7b2f500e756119c0ae7bacc |
+| Tested commit | db7ef8210ac6df2b06165a544e7d9ea81c62361c |
 | Date tested | [FILL: date of the automated run and of the live tests] |
 | Operating system | Windows |
 | Python version | 3.12.10 |
